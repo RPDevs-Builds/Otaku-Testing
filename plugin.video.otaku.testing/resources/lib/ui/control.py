@@ -385,28 +385,31 @@ def clearSettingsCache():
 # ═══════════════════════════════════════════════════════════════════════════
 
 def process_context():
-    """Cache context menu settings into window properties."""
+    """Cache context menu settings into window properties for main, testing, and rpdev addons."""
     context_settings = [
-        "context.otaku.testing.findrecommendations",
-        "context.otaku.testing.findrelations",
-        "context.otaku.testing.getwatchorder",
-        "context.otaku.testing.viewreviews",
-        "context.otaku.testing.viewstatistics",
-        "context.otaku.testing.rescrape",
-        "context.otaku.testing.sourceselect",
-        "context.otaku.testing.logout",
-        "context.otaku.testing.deletefromdatabase",
-        "context.otaku.testing.watchlist",
-        "context.otaku.testing.markedaswatched",
-        "context.otaku.testing.fanartselect"
+        "context.otaku.findrecommendations",
+        "context.otaku.findrelations",
+        "context.otaku.getwatchorder",
+        "context.otaku.viewreviews",
+        "context.otaku.viewstatistics",
+        "context.otaku.rescrape",
+        "context.otaku.sourceselect",
+        "context.otaku.logout",
+        "context.otaku.deletefromdatabase",
+        "context.otaku.watchlist",
+        "context.otaku.markedaswatched",
+        "context.otaku.markpreviouswatched",
+        "context.otaku.fanartselect",
+        "context.otaku.clearcache"
     ]
     for s_id in context_settings:
         try:
-            cache_val = homeWindow.getProperty(s_id)
-            val = settings.getBool(s_id)
-            if cache_val != str(val).lower():
-                homeWindow.setProperty(s_id, str(val).lower())
-        except:
+            val_str = str(settings.getBool(s_id)).lower()
+            for prefix in ('context.otaku', 'context.otaku.testing', 'context.otaku.rpdev'):
+                prop_id = s_id.replace('context.otaku', prefix)
+                if homeWindow.getProperty(prop_id) != val_str:
+                    homeWindow.setProperty(prop_id, val_str)
+        except Exception:
             log(f'Failed to cache context setting: {s_id}', 'error')
 
 
