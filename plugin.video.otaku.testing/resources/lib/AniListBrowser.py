@@ -332,26 +332,34 @@ class AniListBrowser(BrowserBase):
         else:
             soup = None
 
-        # Find the element with the desired information
-        anime_info = soup.find('tr', {'data-id': str(mal_id)})
-
         watch_order_list = []
-        if anime_info is not None:
-            mal_links = soup.find_all('a', href=re.compile(r'https://myanimelist\.net/anime/\d+'))
+        if soup is not None:
+            trs = soup.find_all('tr', {'data-id': True})
             mal_ids = []
-            for link in mal_links:
-                m = re.search(r'\d+', link['href'])
-                if m:
-                    mal_ids.append(m.group())
-            for idmal in mal_ids:
-                variables = {
-                    'idMal': int(idmal),
-                    'type': "ANIME"
-                }
+            for tr in trs:
+                did = tr.get('data-id')
+                if did and did.isdigit() and did not in mal_ids:
+                    mal_ids.append(did)
 
-                anilist_item = database.get(self.get_anilist_res_with_mal_id, 24, variables)
-                if anilist_item is not None:
-                    watch_order_list.append(anilist_item)
+            if not mal_ids:
+                mal_links = soup.find_all('a', href=re.compile(r'https://myanimelist\.net/anime/\d+'))
+                for link in mal_links:
+                    m = re.search(r'\d+', link['href'])
+                    if m and m.group() not in mal_ids:
+                        mal_ids.append(m.group())
+
+            for idmal in mal_ids:
+                try:
+                    variables = {
+                        'idMal': int(idmal),
+                        'type': "ANIME"
+                    }
+
+                    anilist_item = database.get(self.get_anilist_res_with_mal_id, 24, variables)
+                    if anilist_item is not None:
+                        watch_order_list.append(anilist_item)
+                except Exception as e:
+                    control.log(f"AniListBrowser: skipping watch order item MAL {idmal}: {e}", level='warning')
 
         return self.process_watch_order_view(watch_order_list)
 
@@ -698,10 +706,15 @@ class AniListBrowser(BrowserBase):
         '''
 
         response = client.post(self._BASE_URL, json_data={'query': query, 'variables': variables})
-        results = response.json()
+        if not response or not response.text:
+            return None
+        try:
+            results = response.json()
+        except Exception:
+            return None
 
-        if "errors" in results.keys():
-            return
+        if not results or "errors" in results.keys():
+            return None
 
         json_res = results.get('data', {}).get('Page')
 
@@ -802,10 +815,15 @@ class AniListBrowser(BrowserBase):
         '''
 
         response = client.post(self._BASE_URL, json_data={'query': query, 'variables': variables})
-        results = response.json()
+        if not response or not response.text:
+            return None
+        try:
+            results = response.json()
+        except Exception:
+            return None
 
-        if "errors" in results.keys():
-            return
+        if not results or "errors" in results.keys():
+            return None
 
         json_res = results.get('data', {}).get('Page')
 
@@ -900,10 +918,15 @@ class AniListBrowser(BrowserBase):
         '''
 
         response = client.post(self._BASE_URL, json_data={'query': query, 'variables': variables})
-        results = response.json()
+        if not response or not response.text:
+            return None
+        try:
+            results = response.json()
+        except Exception:
+            return None
 
-        if "errors" in results.keys():
-            return
+        if not results or "errors" in results.keys():
+            return None
 
         json_res = results.get('data', {}).get('Media', {}).get('recommendations')
 
@@ -993,10 +1016,15 @@ class AniListBrowser(BrowserBase):
         '''
 
         response = client.post(self._BASE_URL, json_data={'query': query, 'variables': variables})
-        results = response.json()
+        if not response or not response.text:
+            return None
+        try:
+            results = response.json()
+        except Exception:
+            return None
 
-        if "errors" in results.keys():
-            return
+        if not results or "errors" in results.keys():
+            return None
 
         json_res = results.get('data', {}).get('Media', {}).get('relations')
 
@@ -1078,10 +1106,15 @@ class AniListBrowser(BrowserBase):
         '''
 
         response = client.post(self._BASE_URL, json_data={'query': query, 'variables': variables})
-        results = response.json()
+        if not response or not response.text:
+            return None
+        try:
+            results = response.json()
+        except Exception:
+            return None
 
-        if "errors" in results.keys():
-            return
+        if not results or "errors" in results.keys():
+            return None
 
         json_res = results.get('data', {}).get('Media')
 
@@ -1154,10 +1187,15 @@ class AniListBrowser(BrowserBase):
         }
         '''
         response = client.post(self._BASE_URL, json_data={'query': query, 'variables': variables})
-        results = response.json()
+        if not response or not response.text:
+            return None
+        try:
+            results = response.json()
+        except Exception:
+            return None
 
-        if "errors" in results.keys():
-            return
+        if not results or "errors" in results.keys():
+            return None
 
         json_res = results.get('data', {}).get('Media')
 
