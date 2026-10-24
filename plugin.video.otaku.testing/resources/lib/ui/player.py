@@ -132,13 +132,16 @@ class WatchlistPlayer(player):
                     'id': 1
                 }
                 control.jsonrpc(query)
+        control.clean_memory()
 
     def onPlayBackEnded(self):
         control.closeAllDialogs()
+        control.clean_memory()
 
     def onPlayBackError(self):
         control.closeAllDialogs()
         playList.clear()
+        control.clean_memory()
 
     # ── Playlist Building ─────────────────────────────────────────────────
 

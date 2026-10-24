@@ -210,7 +210,7 @@ def getSetting(key):
     return val
 
 
-def getBool(key):
+def getBool(key, default=False):
     """Get setting as boolean - first checks window property cache, then Kodi API"""
     cache = homeWindow.getProperty(f'{ADDON_ID}_{key}')
     if cache:
@@ -218,12 +218,15 @@ def getBool(key):
     ck = f'b_{key}'
     if ck in _settings_cache:
         return _settings_cache[ck]
-    val = settings.getBool(key)
+    try:
+        val = settings.getBool(key)
+    except Exception:
+        val = default
     _settings_cache[ck] = val
     return val
 
 
-def getInt(key):
+def getInt(key, default=0):
     """Get setting as integer - first checks window property cache, then Kodi API"""
     cache = homeWindow.getProperty(f'{ADDON_ID}_{key}')
     if cache:
@@ -234,7 +237,10 @@ def getInt(key):
     ck = f'i_{key}'
     if ck in _settings_cache:
         return _settings_cache[ck]
-    val = settings.getInt(key)
+    try:
+        val = settings.getInt(key)
+    except Exception:
+        val = default
     _settings_cache[ck] = val
     return val
 
@@ -492,6 +498,19 @@ def wait_loop(step: int, timeout: int, path: str, path2: str = '', *, require_it
         log(f"Waited ({step * max_loop}ms) for path {xbmc.getInfoLabel('Container.FolderPath')}")
 
 
+def clean_memory():
+    """Trigger Python garbage collection and release freed heap pages back to OS via malloc_trim."""
+    try:
+        import gc
+        gc.collect()
+        import ctypes
+        libc = ctypes.CDLL(None)
+        if hasattr(libc, 'malloc_trim'):
+            libc.malloc_trim(0)
+    except Exception:
+        pass
+
+
 def closeAllDialogs():
     execute('Dialog.Close(all,true)')
 
@@ -680,9 +699,11 @@ def xbmc_add_dir(name, url, art, info, draw_cm, bulk_add, isfolder, isplayable, 
     # If clearlogo is already a string (pre-selected), use it directly
     # No need for random.choice() since get_meta.py pre-selects it
     if isplayable:
-        art['tvshow.poster'] = art.pop('poster')
+        if 'poster' in art and art['poster']:
+            art['tvshow.poster'] = art.pop('poster')
         liz.setProperties({'Video': 'true', 'IsPlayable': 'true'})
-    liz.setArt(art)
+    clean_art = {k: str(v) for k, v in art.items() if v and isinstance(v, str)}
+    liz.setArt(clean_art)
     return u, liz, isfolder if bulk_add else xbmcplugin.addDirectoryItem(HANDLE, u, liz, isfolder)
 
 
