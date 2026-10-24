@@ -648,7 +648,7 @@ def xbmc_add_dir(name, url, art, info, draw_cm, bulk_add, isfolder, isplayable, 
         fanart_selections = bulk_prefs.get('fanart_selections')
     else:
         artwork_fanart_enabled = getBool('artwork.fanart')
-        fanart_select_enabled = getBool('context.otaku.testing.fanartselect')
+        fanart_select_enabled = getBool('context.otaku.fanartselect') or getBool('context.otaku.testing.fanartselect')
         artwork_clearlogo_enabled = getBool('artwork.clearlogo')
         fanart_mal_ids = None
         fanart_selections = None
@@ -811,7 +811,7 @@ def _dir_list_item_worker(item, bulk_add, bulk_prefs):
 
 def bulk_dir_list(video_data, bulk_add=True):
     artwork_fanart_enabled = getBool('artwork.fanart')
-    fanart_select_enabled = getBool('context.otaku.testing.fanartselect')
+    fanart_select_enabled = getBool('context.otaku.fanartselect') or getBool('context.otaku.testing.fanartselect')
     bulk_prefs = {
         'artwork_fanart_enabled': artwork_fanart_enabled,
         'fanart_select_enabled': fanart_select_enabled,
